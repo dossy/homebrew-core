@@ -17,7 +17,7 @@ class Php < Formula
   depends_on "argon2"
   depends_on "aspell"
   depends_on "autoconf"
-  depends_on "curl" if MacOS.version < :lion
+  depends_on "curl"
   depends_on "freetds"
   depends_on "freetype"
   depends_on "gettext"
@@ -28,6 +28,7 @@ class Php < Formula
   depends_on "libpng"
   depends_on "libpq"
   depends_on "libsodium"
+  depends_on "libxml2"
   depends_on "libzip"
   depends_on "openssl"
   depends_on "pcre"
@@ -35,6 +36,8 @@ class Php < Formula
   depends_on "webp"
 
   needs :cxx11
+
+  patch :DATA
 
   def install
     # Ensure that libxml2 will be detected correctly in older MacOS
@@ -106,6 +109,7 @@ class Php < Formula
       --enable-zip
       --with-apxs2=#{Formula["httpd"].opt_bin}/apxs
       --with-bz2
+      --with-curl=#{Formula["curl"].opt_prefix}
       --with-fpm-user=_www
       --with-fpm-group=_www
       --with-freetype-dir=#{Formula["freetype"].opt_prefix}
@@ -119,6 +123,7 @@ class Php < Formula
       --with-ldap
       --with-ldap-sasl
       --with-libedit
+      --with-libxml-dir=#{Formula["libxml2"].opt_prefix}
       --with-libzip
       --with-mhash
       --with-mysql-sock=/tmp/mysql.sock
@@ -141,12 +146,6 @@ class Php < Formula
       --with-xsl
       --with-zlib
     ]
-
-    if MacOS.version < :lion
-      args << "--with-curl=#{Formula["curl"].opt_prefix}"
-    else
-      args << "--with-curl"
-    end
 
     system "./configure", *args
     system "make"
@@ -390,3 +389,17 @@ class Php < Formula
     end
   end
 end
+
+__END__
+diff --git a/configure b/configure
+index 7d45613..51ae6a8 100755
+--- a/configure
++++ b/configure
+@@ -38727,7 +38727,7 @@ $as_echo "#define HAVE_BIND_TEXTDOMAIN_CODESET 1" >>confdefs.h
+ 
+ fi
+ 
+-  LDFLAGS=$O_LDFLAGS
++  #LDFLAGS=$O_LDFLAGS
+ 
+ fi
