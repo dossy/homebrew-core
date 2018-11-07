@@ -17,7 +17,7 @@ class Php < Formula
   depends_on "argon2"
   depends_on "aspell"
   depends_on "autoconf"
-  depends_on "curl" if MacOS.version < :lion
+  depends_on "curl"
   depends_on "freetds"
   depends_on "freetype"
   depends_on "gettext"
@@ -29,6 +29,7 @@ class Php < Formula
   depends_on "libpng"
   depends_on "libpq"
   depends_on "libsodium"
+  depends_on "libxml2"
   depends_on "libzip"
   depends_on "openldap" if DevelopmentTools.clang_build_version >= 1000
   depends_on "openssl"
@@ -48,6 +49,9 @@ class Php < Formula
     if MacOS.version == :el_capitan || MacOS.version == :sierra
       ENV["SDKROOT"] = MacOS.sdk_path
     end
+
+    # libiconv needs to come earlier in PHP_RPATHS.
+    File.rename("./ext/iconv/config.m4", "./ext/iconv/config0.m4")
 
     # buildconf required due to system library linking bug patch
     system "./buildconf", "--force"
@@ -120,6 +124,7 @@ class Php < Formula
       --enable-zip
       --with-apxs2=#{Formula["httpd"].opt_bin}/apxs
       --with-bz2#{headers_path}
+      --with-curl=#{Formula["curl"].opt_prefix}
       --with-fpm-user=_www
       --with-fpm-group=_www
       --with-freetype-dir=#{Formula["freetype"].opt_prefix}
@@ -131,7 +136,7 @@ class Php < Formula
       --with-kerberos#{headers_path}
       --with-layout=GNU
       --with-ldap-sasl#{headers_path}
-      --with-libxml-dir#{headers_path}
+      --with-libxml-dir=#{Formula["libxml2"].opt_prefix}
       --with-libedit#{headers_path}
       --with-libzip
       --with-mhash#{headers_path}
@@ -157,12 +162,6 @@ class Php < Formula
       --with-xsl#{headers_path}
       --with-zlib#{headers_path}
     ]
-
-    if MacOS.version < :lion
-      args << "--with-curl=#{Formula["curl"].opt_prefix}"
-    else
-      args << "--with-curl#{headers_path}"
-    end
 
     if MacOS.sdk_path_if_needed
       args << "--with-ldap=#{Formula["openldap"].opt_prefix}"
